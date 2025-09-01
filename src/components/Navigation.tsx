@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ShoppingCart, Search, Menu, X } from "lucide-react";
+import { ShoppingCart, Search, Menu, X, LayoutDashboard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useCart } from "@/contexts/CartContext";
@@ -80,6 +80,13 @@ const Navigation = () => {
               </div>
             </div>
             
+            <Link to="/home">
+              <Button variant="outline" size="sm" className="tech-hover">
+                <LayoutDashboard className="w-4 h-4 mr-2" />
+                Dashboard
+              </Button>
+            </Link>
+            
             <Link to="/cart">
               <Button variant="ghost" className="relative p-2">
                 <ShoppingCart className="w-5 h-5" />
@@ -137,6 +144,9 @@ const Navigation = () => {
               </Link>
               <Link to="/my-orders" className="block text-foreground hover:text-primary transition-colors py-2">
                 My Orders
+              </Link>
+              <Link to="/home" className="block text-foreground hover:text-primary transition-colors py-2">
+                Dashboard
               </Link>
             </div>
           </div>
