@@ -59,7 +59,10 @@ const Order = () => {
     setIsProcessing(true);
 
     try {
-      const orderId = await createOrder({
+      // Simulate payment processing
+      await new Promise(resolve => setTimeout(resolve, 2000));
+
+      const orderId = createOrder({
         items: [...items],
         total,
         paymentMethod: paymentMethods.find(method => method.id === paymentMethod)?.name || paymentMethod,
@@ -67,12 +70,19 @@ const Order = () => {
         customerInfo,
       });
 
+      toast({
+        title: "Order placed successfully!",
+        description: `Order #${orderId.split('-')[1]} has been confirmed.`,
+      });
 
       clearCart();
       navigate('/my-orders');
     } catch (error) {
-      // Error handling is done in the OrderContext
-      console.error('Order placement failed:', error);
+      toast({
+        title: "Order failed",
+        description: "Something went wrong. Please try again.",
+        variant: "destructive",
+      });
     } finally {
       setIsProcessing(false);
     }

@@ -1,6 +1,4 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
-import { orderAPI } from '@/services/api';
-import { useToast } from '@/hooks/use-toast';
 import { CartItem } from './CartContext';
 
 export interface Order {
@@ -28,49 +26,24 @@ interface OrderContextType {
 const OrderContext = createContext<OrderContextType | undefined>(undefined);
 
 export const OrderProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [orders, setOrders] = useState<Order[]>([]);
-  const { toast } = useToast();
+  const [orders, setOrders] = useState<Order[]>(() => {
+    const savedOrders = localStorage.getItem('egroots-orders');
+    return savedOrders ? JSON.parse(savedOrders) : [];
+  });
 
-  const createOrder = async (orderData: Omit<Order, 'id' | 'orderDate'>) => {
-    try {
-      const response = await orderAPI.create({
-        items: orderData.items,
-        total: orderData.total,
-        customerInfo: orderData.customerInfo,
-        paymentMethod: orderData.paymentMethod
-      });
+  const createOrder = (orderData: Omit<Order, 'id' | 'orderDate'>) => {
+    const orderId = `order-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    const newOrder: Order = {
+      ...orderData,
+      id: orderId,
+      orderDate: new Date().toISOString(),
+    };
 
-      if (response.success) {
-        const newOrder: Order = {
-          id: response.data._id,
-          items: response.data.items,
-          total: response.data.total,
-          paymentMethod: response.data.paymentMethod,
-          paymentStatus: response.data.paymentStatus,
-          orderDate: response.data.createdAt,
-          customerInfo: response.data.customerInfo
-        };
-
-        setOrders(prev => [newOrder, ...prev]);
-        
-        toast({
-          title: "Order placed successfully!",
-          description: `Order #${response.data._id.slice(-8)} has been confirmed.`,
-        });
-
-        return response.data._id;
-      } else {
-        throw new Error(response.message || 'Failed to create order');
-      }
-    } catch (error) {
-      console.error('Error creating order:', error);
-      toast({
-        title: "Order failed",
-        description: error.response?.data?.message || "Something went wrong. Please try again.",
-        variant: "destructive",
-      });
-      throw error;
-    }
+    const updatedOrders = [...orders, newOrder];
+    setOrders(updatedOrders);
+    localStorage.setItem('egroots-orders', JSON.stringify(updatedOrders));
+    
+    return orderId;
   };
 
   const getOrder = (id: string) => {
@@ -78,35 +51,12 @@ export const OrderProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   };
 
   const updateOrderStatus = (id: string, status: Order['paymentStatus']) => {
-    setOrders(prev => prev.map(order =>
+    const updatedOrders = orders.map(order =>
       order.id === id ? { ...order, paymentStatus: status } : order
-    ));
+    );
+    setOrders(updatedOrders);
+    localStorage.setItem('egroots-orders', JSON.stringify(updatedOrders));
   };
-
-  // Load orders from API when component mounts
-  React.useEffect(() => {
-    const loadOrders = async () => {
-      try {
-        const response = await orderAPI.getAll();
-        if (response.success) {
-          const apiOrders: Order[] = response.data.map((order: any) => ({
-            id: order._id,
-            items: order.items,
-            total: order.total,
-            paymentMethod: order.paymentMethod,
-            paymentStatus: order.paymentStatus,
-            orderDate: order.createdAt,
-            customerInfo: order.customerInfo
-          }));
-          setOrders(apiOrders);
-        }
-      } catch (error) {
-        console.error('Error loading orders:', error);
-      }
-    };
-
-    loadOrders();
-  }, []);
 
   return (
     <OrderContext.Provider

@@ -3,19 +3,14 @@ import HeroSection from "@/components/HeroSection";
 import ProductCard from "@/components/ProductCard";
 import Newsletter from "@/components/Newsletter";
 import Testimonials from "@/components/Testimonials";
-import { useProducts } from "@/hooks/useProducts";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { categories } from "@/data/products";
+import { featuredProducts, categories } from "@/data/products";
 import { ArrowRight, Package, Users, Award, Zap } from "lucide-react";
 import { Link } from "react-router-dom";
-import { Skeleton } from "@/components/ui/skeleton";
 
 const Index = () => {
-  // Fetch featured products from API
-  const { products: featuredProducts, loading } = useProducts({ featured: 'true', limit: 6 });
-
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
@@ -90,35 +85,11 @@ const Index = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {loading ? (
-              [...Array(6)].map((_, index) => (
-                <div key={index} className="space-y-4">
-                  <Skeleton className="h-64 w-full rounded-lg" />
-                  <Skeleton className="h-4 w-3/4" />
-                  <Skeleton className="h-4 w-1/2" />
-                  <Skeleton className="h-8 w-full" />
-                </div>
-              ))
-            ) : (
-              featuredProducts.map((product, index) => (
-                <div key={product._id} className="animate-slide-up" style={{ animationDelay: `${index * 0.1}s` }}>
-                  <ProductCard product={{
-                    id: product._id,
-                    name: product.name,
-                    price: product.price,
-                    originalPrice: product.originalPrice,
-                    image: product.image,
-                    category: product.category,
-                    rating: product.rating,
-                    reviewCount: product.reviewCount,
-                    description: product.description,
-                    inStock: product.inStock,
-                    isNew: product.isNew,
-                    isFeatured: product.isFeatured
-                  }} />
-                </div>
-              ))
-            )}
+            {featuredProducts.slice(0, 6).map((product, index) => (
+              <div key={product.id} className="animate-slide-up" style={{ animationDelay: `${index * 0.1}s` }}>
+                <ProductCard product={product} />
+              </div>
+            ))}
           </div>
         </div>
       </section>
