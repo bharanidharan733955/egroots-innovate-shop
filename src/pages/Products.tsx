@@ -1,12 +1,14 @@
 import { useState } from "react";
+import { useProducts } from "@/hooks/useProducts";
 import Navigation from "@/components/Navigation";
 import ProductCard from "@/components/ProductCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { featuredProducts, categories } from "@/data/products";
+import { categories } from "@/data/products";
 import { Search, Filter, Grid, List } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const Products = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -14,28 +16,11 @@ const Products = () => {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [sortBy, setSortBy] = useState("featured");
 
-  // Filter products based on search and category
-  const filteredProducts = featuredProducts.filter(product => {
-    const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         product.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = selectedCategory === "all" || product.category === selectedCategory;
-    return matchesSearch && matchesCategory;
-  });
-
-  // Sort products
-  const sortedProducts = [...filteredProducts].sort((a, b) => {
-    switch (sortBy) {
-      case "price-low":
-        return a.price - b.price;
-      case "price-high":
-        return b.price - a.price;
-      case "name":
-        return a.name.localeCompare(b.name);
-      case "rating":
-        return b.rating - a.rating;
-      default:
-        return 0;
-    }
+  // Fetch products from API
+  const { products, loading, error } = useProducts({
+    category: selectedCategory !== "all" ? selectedCategory : undefined,
+    search: searchTerm || undefined,
+    sort: sortBy
   });
 
   return (
@@ -75,9 +60,6 @@ const Products = () => {
                 className="tech-hover"
               >
                 {category.name}
-                <Badge variant="secondary" className="ml-2">
-                  {category.productCount}
-                </Badge>
               </Button>
             ))}
           </div>
@@ -133,7 +115,7 @@ const Products = () => {
 
           <div className="mt-4 flex items-center justify-between">
             <p className="text-sm text-muted-foreground">
-              Showing {sortedProducts.length} of {featuredProducts.length} products
+              {loading ? 'Loading...' : `Showing ${products.length} products`}
             </p>
             {selectedCategory !== "all" && (
               <Button
@@ -152,7 +134,29 @@ const Products = () => {
       {/* Products Grid */}
       <section className="py-8">
         <div className="container mx-auto px-4">
-          {sortedProducts.length === 0 ? (
+          {loading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {[...Array(8)].map((_, index) => (
+                <div key={index} className="space-y-4">
+                  <Skeleton className="h-64 w-full rounded-lg" />
+                  <Skeleton className="h-4 w-3/4" />
+                  <Skeleton className="h-4 w-1/2" />
+                  <Skeleton className="h-8 w-full" />
+                </div>
+              ))}
+            </div>
+          ) : error ? (
+            <div className="text-center py-16">
+              <div className="w-32 h-32 bg-destructive/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span className="text-4xl">⚠️</span>
+              </div>
+              <h3 className="text-xl font-semibold text-foreground mb-2">Error Loading Products</h3>
+              <p className="text-muted-foreground mb-4">{error}</p>
+              <Button onClick={() => window.location.reload()}>
+                Try Again
+              </Button>
+            </div>
+          ) : products.length === 0 ? (
             <div className="text-center py-16">
               <div className="w-32 h-32 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
                 <Search className="w-16 h-16 text-muted-foreground" />
@@ -174,9 +178,22 @@ const Products = () => {
                 ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" 
                 : "grid-cols-1"
             }`}>
-              {sortedProducts.map((product, index) => (
+              {products.map((product, index) => (
                 <div key={product.id} className="animate-slide-up" style={{ animationDelay: `${index * 0.05}s` }}>
-                  <ProductCard product={product} />
+                  <ProductCard product={{
+                    id: product._id,
+                    name: product.name,
+                    price: product.price,
+                    originalPrice: product.originalPrice,
+                    image: product.image,
+                    category: product.category,
+                    rating: product.rating,
+                    reviewCount: product.reviewCount,
+                    description: product.description,
+                    inStock: product.inStock,
+                    isNew: product.isNew,
+                    isFeatured: product.isFeatured
+                  }} />
                 </div>
               ))}
             </div>
