@@ -126,21 +126,21 @@ const Login: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+        <div className="gradient-card rounded-2xl shadow-xl border border-border/50 overflow-hidden tech-hover animate-slide-up">
 
           {/* Header */}
-          <div className="bg-gradient-to-r from-blue-600 to-purple-600 px-8 py-6 text-center">
-            <div className="w-16 h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center mx-auto mb-4 backdrop-blur-sm">
-              <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center">
-                <User className="w-4 h-4 text-blue-600" />
+          <div className="gradient-primary px-8 py-6 text-center">
+            <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4 backdrop-blur-sm">
+              <div className="w-8 h-8 bg-card rounded-full flex items-center justify-center">
+                <User className="w-4 h-4 text-primary" />
               </div>
             </div>
-            <h1 className="text-2xl font-bold text-white mb-2">
+            <h1 className="text-2xl font-bold text-primary-foreground mb-2">
               {isLogin ? 'Welcome Back' : 'Create Account'}
             </h1>
-            <p className="text-blue-100 text-sm">
+            <p className="text-primary-foreground/80 text-sm">
               {isLogin
                 ? 'Sign in to your account to continue'
                 : 'Join us and start your journey today'}
@@ -153,7 +153,7 @@ const Login: React.FC = () => {
 
               {/* General Error */}
               {errors.general && (
-                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+                <div className="bg-destructive/10 border border-destructive/20 text-destructive px-4 py-3 rounded-lg text-sm">
                   {errors.general}
                 </div>
               )}
@@ -161,7 +161,7 @@ const Login: React.FC = () => {
               {/* Full Name (Sign Up Only) */}
               {!isLogin && (
                 <div>
-                  <label htmlFor="fullName" className="block text-sm font-medium text-gray-700">Full Name</label>
+                  <label htmlFor="fullName" className="block text-sm font-medium text-foreground">Full Name</label>
                   <div className="relative mt-1">
                     <input
                       id="fullName"
@@ -169,22 +169,22 @@ const Login: React.FC = () => {
                       type="text"
                       value={formData.fullName || ''}
                       onChange={handleInputChange}
-                      className={`block w-full pl-10 pr-3 py-3 border rounded-lg ${errors.fullName ? 'border-red-300 bg-red-50' : 'border-gray-300'}`}
+                      className={`block w-full pl-10 pr-3 py-3 border rounded-lg bg-background text-foreground ${errors.fullName ? 'border-destructive bg-destructive/10' : 'border-border'} focus:border-primary focus:ring-1 focus:ring-primary transition-colors`}
                       placeholder="Your full name"
                     />
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <User className="h-5 w-5 text-gray-400" />
+                      <User className="h-5 w-5 text-muted-foreground" />
                     </div>
                   </div>
                   {errors.fullName && (
-                    <p className="text-sm text-red-600 mt-1">{errors.fullName}</p>
+                    <p className="text-sm text-destructive mt-1">{errors.fullName}</p>
                   )}
                 </div>
               )}
 
               {/* Email */}
               <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email</label>
+                <label htmlFor="email" className="block text-sm font-medium text-foreground">Email</label>
                 <div className="relative mt-1">
                   <input
                     id="email"
@@ -192,21 +192,21 @@ const Login: React.FC = () => {
                     type="email"
                     value={formData.email}
                     onChange={handleInputChange}
-                    className={`block w-full pl-10 pr-3 py-3 border rounded-lg ${errors.email ? 'border-red-300 bg-red-50' : 'border-gray-300'}`}
+                    className={`block w-full pl-10 pr-3 py-3 border rounded-lg bg-background text-foreground ${errors.email ? 'border-destructive bg-destructive/10' : 'border-border'} focus:border-primary focus:ring-1 focus:ring-primary transition-colors`}
                     placeholder="Your email"
                   />
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Mail className="h-5 w-5 text-gray-400" />
+                    <Mail className="h-5 w-5 text-muted-foreground" />
                   </div>
                 </div>
                 {errors.email && (
-                  <p className="text-sm text-red-600 mt-1">{errors.email}</p>
+                  <p className="text-sm text-destructive mt-1">{errors.email}</p>
                 )}
               </div>
 
               {/* Password */}
               <div>
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700">Password</label>
+                <label htmlFor="password" className="block text-sm font-medium text-foreground">Password</label>
                 <div className="relative mt-1">
                   <input
                     id="password"
@@ -214,29 +214,29 @@ const Login: React.FC = () => {
                     type={showPassword ? 'text' : 'password'}
                     value={formData.password}
                     onChange={handleInputChange}
-                    className={`block w-full pl-10 pr-10 py-3 border rounded-lg ${errors.password ? 'border-red-300 bg-red-50' : 'border-gray-300'}`}
+                    className={`block w-full pl-10 pr-10 py-3 border rounded-lg bg-background text-foreground ${errors.password ? 'border-destructive bg-destructive/10' : 'border-border'} focus:border-primary focus:ring-1 focus:ring-primary transition-colors`}
                     placeholder="Your password"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400"
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-muted-foreground hover:text-foreground transition-colors"
                   >
                     {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                   </button>
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Lock className="h-5 w-5 text-gray-400" />
+                    <Lock className="h-5 w-5 text-muted-foreground" />
                   </div>
                 </div>
                 {errors.password && (
-                  <p className="text-sm text-red-600 mt-1">{errors.password}</p>
+                  <p className="text-sm text-destructive mt-1">{errors.password}</p>
                 )}
               </div>
 
               {/* Confirm Password (Sign Up Only) */}
               {!isLogin && (
                 <div>
-                  <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">Confirm Password</label>
+                  <label htmlFor="confirmPassword" className="block text-sm font-medium text-foreground">Confirm Password</label>
                   <div className="relative mt-1">
                     <input
                       id="confirmPassword"
@@ -244,22 +244,22 @@ const Login: React.FC = () => {
                       type={showConfirmPassword ? 'text' : 'password'}
                       value={formData.confirmPassword || ''}
                       onChange={handleInputChange}
-                      className={`block w-full pl-10 pr-10 py-3 border rounded-lg ${errors.confirmPassword ? 'border-red-300 bg-red-50' : 'border-gray-300'}`}
+                      className={`block w-full pl-10 pr-10 py-3 border rounded-lg bg-background text-foreground ${errors.confirmPassword ? 'border-destructive bg-destructive/10' : 'border-border'} focus:border-primary focus:ring-1 focus:ring-primary transition-colors`}
                       placeholder="Re-enter your password"
                     />
                     <button
                       type="button"
                       onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                      className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400"
+                      className="absolute inset-y-0 right-0 pr-3 flex items-center text-muted-foreground hover:text-foreground transition-colors"
                     >
                       {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                     </button>
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <Lock className="h-5 w-5 text-gray-400" />
+                      <Lock className="h-5 w-5 text-muted-foreground" />
                     </div>
                   </div>
                   {errors.confirmPassword && (
-                    <p className="text-sm text-red-600 mt-1">{errors.confirmPassword}</p>
+                    <p className="text-sm text-destructive mt-1">{errors.confirmPassword}</p>
                   )}
                 </div>
               )}
@@ -268,10 +268,10 @@ const Login: React.FC = () => {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 px-4 rounded-lg font-medium hover:from-blue-700 hover:to-purple-700 transition-all duration-200 flex items-center justify-center gap-2"
+                className="w-full gradient-primary text-primary-foreground py-3 px-4 rounded-lg font-medium tech-hover transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50"
               >
                 {isLoading ? (
-                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  <div className="w-5 h-5 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
                 ) : (
                   <>
                     {isLogin ? 'Sign In' : 'Create Account'}
@@ -282,14 +282,14 @@ const Login: React.FC = () => {
             </form>
 
             {/* Toggle Auth Mode */}
-            <div className="mt-6 text-center text-sm text-gray-600">
+            <div className="mt-6 text-center text-sm text-muted-foreground">
               {isLogin ? (
                 <>Don't have an account?{' '}
-                  <button onClick={toggleAuthMode} className="text-blue-600 font-medium hover:underline">Sign Up</button>
+                  <button onClick={toggleAuthMode} className="text-primary font-medium hover:underline transition-colors">Sign Up</button>
                 </>
               ) : (
                 <>Already have an account?{' '}
-                  <button onClick={toggleAuthMode} className="text-blue-600 font-medium hover:underline">Sign In</button>
+                  <button onClick={toggleAuthMode} className="text-primary font-medium hover:underline transition-colors">Sign In</button>
                 </>
               )}
             </div>
