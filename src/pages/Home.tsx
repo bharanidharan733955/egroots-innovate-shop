@@ -3,7 +3,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { LogOut, User, ShoppingBag, Package, Award } from 'lucide-react';
+import { LogOut, User, ShoppingBag, Package, Award, Mail, Calendar, Settings } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const Home = () => {
@@ -42,34 +42,67 @@ const Home = () => {
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
-        {/* Welcome Section */}
+        {/* Personal Details Section */}
         <div className="mb-8">
           <Card className="gradient-card border-border/50">
             <CardHeader>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  <div className="w-12 h-12 bg-primary/20 rounded-full flex items-center justify-center">
-                    <User className="w-6 h-6 text-primary" />
-                  </div>
-                  <div>
-                    <CardTitle className="text-2xl text-foreground">
-                      Welcome back!
-                    </CardTitle>
-                    <CardDescription className="text-lg">
-                      {user?.email}
-                    </CardDescription>
-                  </div>
-                </div>
-                <Badge variant="outline" className="primary-glow">
-                  Active User
-                </Badge>
-              </div>
+              <CardTitle className="text-2xl text-foreground flex items-center gap-2">
+                <User className="w-6 h-6" />
+                Personal Details
+              </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-muted-foreground">
-                Ready to explore the latest in electronics, 3D printing, and robotics? 
-                Your journey into innovation starts here.
-              </p>
+              <div className="grid md:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3">
+                    <Mail className="w-5 h-5 text-muted-foreground" />
+                    <div>
+                      <p className="text-sm text-muted-foreground">Email Address</p>
+                      <p className="font-medium text-foreground">{user?.email}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Calendar className="w-5 h-5 text-muted-foreground" />
+                    <div>
+                      <p className="text-sm text-muted-foreground">Member Since</p>
+                      <p className="font-medium text-foreground">
+                        {new Date().toLocaleDateString('en-US', { 
+                          year: 'numeric', 
+                          month: 'long', 
+                          day: 'numeric' 
+                        })}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3">
+                    <Settings className="w-5 h-5 text-muted-foreground" />
+                    <div>
+                      <p className="text-sm text-muted-foreground">Account Status</p>
+                      <div className="flex items-center gap-2">
+                        <p className="font-medium text-green-600">Active</p>
+                        <Badge variant="outline" className="primary-glow">
+                          Verified
+                        </Badge>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Package className="w-5 h-5 text-muted-foreground" />
+                    <div>
+                      <p className="text-sm text-muted-foreground">Total Orders</p>
+                      <p className="font-medium text-foreground">0</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="mt-6 pt-6 border-t border-border">
+                <p className="text-muted-foreground text-center">
+                  Ready to explore the latest in electronics, 3D printing, and robotics? 
+                  Your journey into innovation starts here.
+                </p>
+              </div>
             </CardContent>
           </Card>
         </div>
@@ -160,5 +193,4 @@ const Home = () => {
     </div>
   );
 };
-
 export default Home;
