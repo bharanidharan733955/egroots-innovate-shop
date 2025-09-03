@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useCart } from "@/contexts/CartContext";
 import { Link } from "react-router-dom";
+import logoImage from "../assets/logo.png";
+
 
 const Navigation = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -19,14 +21,14 @@ const Navigation = () => {
   const cartItemCount = items.reduce((total, item) => total + item.quantity, 0);
 
   return (
-    <nav className="glass sticky top-0 z-50 border-b border-primary/20">
+    <nav className="bg-white sticky top-0 z-50 border-b border-gray-200/20">
       <div className="container mx-auto px-4">
         {/* Main Navigation */}
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-gradient-primary rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">EG</span>
+            <div className="w-10 h-10 flex items-center justify-center">
+             <img src={logoImage} alt="E-Groots Logo" className="w-full h-full object-cover" />
             </div>
             <div>
               <h1 className="text-xl font-bold text-primary">E-Groots</h1>
@@ -36,11 +38,11 @@ const Navigation = () => {
 
           {/* Desktop Menu */}
           <div className="hidden md:flex items-center space-x-8">
-            <Link to="/" className="text-foreground hover:text-primary transition-colors">
+            <Link to="/" className="text-black hover:text-blue-600 transition-colors">
               Home
             </Link>
             <div className="relative group">
-              <button className="text-foreground hover:text-primary transition-colors">
+              <button className="text-black hover:text-blue-600 transition-colors">
                 Products
               </button>
               <div className="absolute top-full left-0 mt-2 w-48 glass rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
@@ -57,13 +59,13 @@ const Navigation = () => {
                 </div>
               </div>
             </div>
-            <Link to="/about" className="text-foreground hover:text-primary transition-colors">
+            <Link to="/about" className="text-black hover:text-blue-600 transition-colors">
               About
             </Link>
-            <Link to="/contact" className="text-foreground hover:text-primary transition-colors">
+            <Link to="/contact" className="text-black hover:text-blue-600 transition-colors">
               Contact
             </Link>
-            <Link to="/my-orders" className="text-foreground hover:text-primary transition-colors">
+            <Link to="/my-orders" className="text-black hover:text-blue-600 transition-colors">
               My Orders
             </Link>
           </div>
@@ -73,9 +75,10 @@ const Navigation = () => {
             <div className="hidden md:flex items-center space-x-2">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+
                 <Input
                   placeholder="Search products..."
-                  className="pl-10 w-64 bg-muted/50 border-border"
+                  className="pl-10 w-64 bg-white border border-gray-300 text-black placeholder-black"
                 />
               </div>
             </div>

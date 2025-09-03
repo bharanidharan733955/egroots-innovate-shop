@@ -26,46 +26,14 @@ const AppRoutes = () => {
   return (
     <Routes>
       <Route path="/login" element={!isAuthenticated ? <Login /> : <Navigate to="/" replace />} />
-      <Route path="/home" element={
-        <ProtectedRoute>
-          <Home />
-        </ProtectedRoute>
-      } />
-      <Route path="/" element={
-        <ProtectedRoute>
-          <Index />
-        </ProtectedRoute>
-      } />
-      <Route path="/products" element={
-        <ProtectedRoute>
-          <Products />
-        </ProtectedRoute>
-      } />
-      <Route path="/cart" element={
-        <ProtectedRoute>
-          <Cart />
-        </ProtectedRoute>
-      } />
-      <Route path="/order" element={
-        <ProtectedRoute>
-          <Order />
-        </ProtectedRoute>
-      } />
-      <Route path="/my-orders" element={
-        <ProtectedRoute>
-          <MyOrders />
-        </ProtectedRoute>
-      } />
-      <Route path="/about" element={
-        <ProtectedRoute>
-          <About />
-        </ProtectedRoute>
-      } />
-      <Route path="/contact" element={
-        <ProtectedRoute>
-          <Contact />
-        </ProtectedRoute>
-      } />
+      <Route path="/home" element={<ProtectedRoute><Home /></ProtectedRoute>} />
+      <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+      <Route path="/products" element={<ProtectedRoute><Products /></ProtectedRoute>} />
+      <Route path="/cart" element={<ProtectedRoute><Cart /></ProtectedRoute>} />
+      <Route path="/order" element={<ProtectedRoute><Order /></ProtectedRoute>} />
+      <Route path="/my-orders" element={<ProtectedRoute><MyOrders /></ProtectedRoute>} />
+      <Route path="/about" element={<ProtectedRoute><About /></ProtectedRoute>} />
+      <Route path="/contact" element={<ProtectedRoute><Contact /></ProtectedRoute>} />
       {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
       <Route path="*" element={<NotFound />} />
     </Routes>

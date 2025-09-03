@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
-import heroImage from "@/assets/hero-banner.jpg";
+// import heroImage from "@/assets/hero-banner.jpg";
+import circuitVideo from "@/assets/circuit.mp4";
 import { ArrowRight, Zap, Target, Users } from "lucide-react";
 import { Link } from "react-router-dom";
 
@@ -8,11 +9,14 @@ const HeroSection = () => {
     <section className="relative min-h-[80vh] flex items-center justify-center overflow-hidden">
       {/* Background Image with Overlay */}
       <div className="absolute inset-0">
-        <img 
-          src={heroImage} 
-          alt="E-Groots Electronics" 
-          className="w-full h-full object-cover"
-        />
+        <video
+    src={circuitVideo}  
+    autoPlay
+    loop
+    muted
+    playsInline
+    className="w-full h-full object-cover"
+  />
         <div className="absolute inset-0 bg-gradient-to-r from-background/90 via-background/70 to-transparent" />
       </div>
       
