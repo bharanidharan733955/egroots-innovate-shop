@@ -3,13 +3,15 @@ import { ShoppingCart, Search, Menu, X, LayoutDashboard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useCart } from "@/contexts/CartContext";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import logoImage from "../assets/logo.png";
 
 
 const Navigation = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
   const { items } = useCart();
+  const navigate = useNavigate();
   
   const categories = [
     "3D Printing Kits",
@@ -19,6 +21,15 @@ const Navigation = () => {
   ];
 
   const cartItemCount = items.reduce((total, item) => total + item.quantity, 0);
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchTerm.trim()) {
+      navigate(`/products?search=${encodeURIComponent(searchTerm.trim())}`);
+    } else {
+      navigate('/products');
+    }
+  };
 
   return (
     <nav className="bg-white sticky top-0 z-50 border-b border-gray-200/20">
@@ -73,14 +84,15 @@ const Navigation = () => {
           {/* Search & Cart */}
           <div className="flex items-center space-x-4">
             <div className="hidden md:flex items-center space-x-2">
-              <div className="relative">
+              <form onSubmit={handleSearch} className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-
                 <Input
                   placeholder="Search products..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10 w-64 bg-white border border-gray-300 text-black placeholder-black"
                 />
-              </div>
+              </form>
             </div>
             
             <Link to="/home">
@@ -115,13 +127,15 @@ const Navigation = () => {
         {/* Mobile Menu */}
         {isMenuOpen && (
           <div className="md:hidden py-4 space-y-4 animate-slide-up">
-            <div className="relative">
+            <form onSubmit={handleSearch} className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
                 placeholder="Search products..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10 w-full bg-muted/50 border-border"
               />
-            </div>
+            </form>
             
             <div className="space-y-2">
               <Link to="/" className="block text-foreground hover:text-primary transition-colors py-2">
