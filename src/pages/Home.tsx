@@ -3,7 +3,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { LogOut, User, ShoppingBag, Package, Award, Mail, Calendar, Settings } from 'lucide-react';
+import { LogOut, User, ShoppingBag, Package, Award, Mail, Calendar, Settings, ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const Home = () => {
@@ -13,6 +13,9 @@ const Home = () => {
     logout();
   };
 
+  // Extract name from email (part before @)
+  const userName = user?.email ? user.email.split('@')[0] : 'User';
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -20,12 +23,18 @@ const Home = () => {
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
+              <Button asChild variant="ghost" size="sm" className="tech-hover">
+                <Link to="/">
+                  <ArrowLeft className="w-4 h-4 mr-2" />
+                  Back to Home
+                </Link>
+              </Button>
               <div className="w-10 h-10 bg-gradient-primary rounded-lg flex items-center justify-center">
                 <span className="text-white font-bold">EG</span>
               </div>
               <div>
                 <h1 className="text-xl font-bold text-foreground">E-Groots</h1>
-                <p className="text-xs text-muted-foreground">Dashboard</p>
+                <p className="text-xs text-muted-foreground">Dashboard - Welcome, {userName}</p>
               </div>
             </div>
             <Button 
