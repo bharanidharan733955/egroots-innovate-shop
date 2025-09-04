@@ -3,11 +3,29 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useOrder } from "@/contexts/OrderContext";
-import { Package, Calendar, CreditCard, ShoppingBag } from "lucide-react";
+import { Package, Calendar, CreditCard, ShoppingBag, Trash2 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useState } from "react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 const MyOrders = () => {
-  const { orders } = useOrder();
+  const { orders, deleteOrder } = useOrder();
+  const [deletingOrderId, setDeletingOrderId] = useState<string | null>(null);
+
+  const handleDeleteOrder = (orderId: string) => {
+    deleteOrder(orderId);
+    setDeletingOrderId(null);
+  };
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -88,9 +106,40 @@ const MyOrders = () => {
                     <Package className="w-5 h-5" />
                     <span>Order #{order.id.split('-')[1]}</span>
                   </CardTitle>
-                  <Badge variant={getStatusBadgeVariant(order.paymentStatus)} className={getStatusColor(order.paymentStatus)}>
-                    {order.paymentStatus.charAt(0).toUpperCase() + order.paymentStatus.slice(1)}
-                  </Badge>
+                  <div className="flex items-center space-x-2">
+                    <Badge variant={getStatusBadgeVariant(order.paymentStatus)} className={getStatusColor(order.paymentStatus)}>
+                      {order.paymentStatus.charAt(0).toUpperCase() + order.paymentStatus.slice(1)}
+                    </Badge>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                          onClick={() => setDeletingOrderId(order.id)}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Delete Order</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Are you sure you want to delete Order #{order.id.split('-')[1]}? This action cannot be undone.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                            onClick={() => handleDeleteOrder(order.id)}
+                          >
+                            Delete Order
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
                 </div>
                 <div className="flex items-center space-x-4 text-sm text-muted-foreground">
                   <div className="flex items-center space-x-1">
