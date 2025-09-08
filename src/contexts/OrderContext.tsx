@@ -21,6 +21,7 @@ interface OrderContextType {
   createOrder: (orderData: Omit<Order, 'id' | 'orderDate'>) => string;
   getOrder: (id: string) => Order | undefined;
   updateOrderStatus: (id: string, status: Order['paymentStatus']) => void;
+  deleteOrder: (id: string) => void;
 }
 
 const OrderContext = createContext<OrderContextType | undefined>(undefined);
@@ -58,6 +59,12 @@ export const OrderProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     localStorage.setItem('egroots-orders', JSON.stringify(updatedOrders));
   };
 
+  const deleteOrder = (id: string) => {
+    const updatedOrders = orders.filter(order => order.id !== id);
+    setOrders(updatedOrders);
+    localStorage.setItem('egroots-orders', JSON.stringify(updatedOrders));
+  };
+
   return (
     <OrderContext.Provider
       value={{
@@ -65,6 +72,7 @@ export const OrderProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         createOrder,
         getOrder,
         updateOrderStatus,
+        deleteOrder,
       }}
     >
       {children}
