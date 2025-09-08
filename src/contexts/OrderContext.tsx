@@ -6,7 +6,7 @@ export interface Order {
   items: CartItem[];
   total: number;
   paymentMethod: string;
-  paymentStatus: 'pending' | 'completed' | 'failed';
+  paymentStatus: 'pending' | 'completed' | 'failed' | 'cancelled';
   orderDate: string;
   customerInfo?: {
     name: string;

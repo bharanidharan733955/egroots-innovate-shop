@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useOrder } from "@/contexts/OrderContext";
-import { Package, Calendar, CreditCard, ShoppingBag, Trash2 } from "lucide-react";
+import { Package, Calendar, CreditCard, ShoppingBag, Trash2, X } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useState } from "react";
 import {
@@ -19,11 +19,16 @@ import {
 } from "@/components/ui/alert-dialog";
 
 const MyOrders = () => {
-  const { orders, deleteOrder } = useOrder();
+  const { orders, deleteOrder, updateOrderStatus } = useOrder();
   const [deletingOrderId, setDeletingOrderId] = useState<string | null>(null);
 
   const handleDeleteOrder = (orderId: string) => {
     deleteOrder(orderId);
+    setDeletingOrderId(null);
+  };
+
+  const handleCancelOrder = (orderId: string) => {
+    updateOrderStatus(orderId, 'cancelled');
     setDeletingOrderId(null);
   };
 
@@ -46,6 +51,8 @@ const MyOrders = () => {
         return 'secondary';
       case 'failed':
         return 'destructive';
+      case 'cancelled':
+        return 'outline';
       default:
         return 'outline';
     }
@@ -59,6 +66,8 @@ const MyOrders = () => {
         return 'text-tech-orange';
       case 'failed':
         return 'text-destructive';
+      case 'cancelled':
+        return 'text-muted-foreground';
       default:
         return 'text-muted-foreground';
     }
@@ -110,35 +119,67 @@ const MyOrders = () => {
                     <Badge variant={getStatusBadgeVariant(order.paymentStatus)} className={getStatusColor(order.paymentStatus)}>
                       {order.paymentStatus.charAt(0).toUpperCase() + order.paymentStatus.slice(1)}
                     </Badge>
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                          onClick={() => setDeletingOrderId(order.id)}
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Delete Order</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            Are you sure you want to delete Order #{order.id.split('-')[1]}? This action cannot be undone.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction
-                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                            onClick={() => handleDeleteOrder(order.id)}
+                    {order.paymentStatus === 'pending' ? (
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-orange-600 hover:text-orange-700 hover:bg-orange-50"
+                            onClick={() => setDeletingOrderId(order.id)}
                           >
-                            Delete Order
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
+                            <X className="w-4 h-4" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Cancel Order</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Are you sure you want to cancel Order #{order.id.split('-')[1]}? This will mark the order as cancelled.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Keep Order</AlertDialogCancel>
+                            <AlertDialogAction
+                              className="bg-orange-600 text-white hover:bg-orange-700"
+                              onClick={() => handleCancelOrder(order.id)}
+                            >
+                              Cancel Order
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    ) : (
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                            onClick={() => setDeletingOrderId(order.id)}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Delete Order</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Are you sure you want to delete Order #{order.id.split('-')[1]}? This action cannot be undone.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction
+                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                              onClick={() => handleDeleteOrder(order.id)}
+                            >
+                              Delete Order
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    )}
                   </div>
                 </div>
                 <div className="flex items-center space-x-4 text-sm text-muted-foreground">
