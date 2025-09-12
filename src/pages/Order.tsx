@@ -33,7 +33,7 @@ const Order = () => {
     { id: "razorpay", name: "Razorpay", icon: Building2, description: "Multiple payment options" },
   ];
 
-  const handleInputChange = (field: string, value: string) => {
+  const handleInputChange = (field, value) => {
     setCustomerInfo(prev => ({ ...prev, [field]: value }));
   };
 
@@ -70,13 +70,25 @@ const Order = () => {
         customerInfo,
       });
 
-      toast({
-        title: "Order placed successfully!",
-        description: `Order #${orderId.split('-')[1]} has been confirmed.`,
-      });
+      await fetch('http://localhost:5000/api/send-order-email', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    customerInfo,
+    items,
+    total,
+    paymentMethod: paymentMethods.find(method => method.id === paymentMethod)?.name || paymentMethod,
+  }),
+});
+
+toast({
+  title: "Order placed successfully!",
+  description: `Order #${orderId.split('-')[1]} has been confirmed and emailed.`,
+});
 
       clearCart();
       navigate('/my-orders');
+
     } catch (error) {
       toast({
         title: "Order failed",
@@ -124,9 +136,8 @@ const Order = () => {
         </div>
         
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Customer Information & Payment Method */}
+
           <div className="space-y-6">
-            {/* Customer Details */}
             <Card className="gradient-card border-border/50">
               <CardHeader>
                 <CardTitle className="text-foreground">Customer Information</CardTitle>
@@ -178,7 +189,6 @@ const Order = () => {
               </CardContent>
             </Card>
 
-            {/* Payment Method Selection */}
             <Card className="gradient-card border-border/50">
               <CardHeader>
                 <CardTitle className="text-foreground">Payment Method</CardTitle>
@@ -202,14 +212,12 @@ const Order = () => {
             </Card>
           </div>
 
-          {/* Order Summary */}
           <div>
             <Card className="gradient-card border-border/50 sticky top-24">
               <CardHeader>
                 <CardTitle className="text-foreground">Order Summary</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                {/* Order Items */}
                 <div className="space-y-3 max-h-64 overflow-y-auto">
                   {items.map((item) => (
                     <div key={item.id} className="flex items-center space-x-3">
@@ -229,7 +237,6 @@ const Order = () => {
 
                 <Separator />
 
-                {/* Price Breakdown */}
                 <div className="space-y-2">
                   <div className="flex justify-between text-foreground">
                     <span>Subtotal ({items.reduce((sum, item) => sum + item.quantity, 0)} items)</span>
@@ -266,6 +273,7 @@ const Order = () => {
               </CardContent>
             </Card>
           </div>
+
         </div>
       </div>
     </div>

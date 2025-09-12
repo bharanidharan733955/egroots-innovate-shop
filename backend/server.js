@@ -1,75 +1,83 @@
 const express = require('express');
 const cors = require('cors');
-const helmet = require('helmet');
-const rateLimit = require('express-rate-limit');
-const dotenv = require('dotenv');
-const connectDB = require('./config/db');
-
-// Load environment variables
-dotenv.config();
-
-// Connect to MongoDB
-connectDB();
+const nodemailer = require('nodemailer');
+require('dotenv').config();
 
 const app = express();
-
-// Security middleware
-app.use(helmet());
-
-// Rate limiting
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limit each IP to 100 requests per windowMs
-  message: 'Too many requests from this IP, please try again later.'
-});
-app.use('/api/', limiter);
-
-// CORS configuration
-app.use(cors({
-  origin: process.env.NODE_ENV === 'production' 
-    ? ['https://your-frontend-domain.com'] 
-    : ['http://localhost:3000', 'http://127.0.0.1:3000'],
-  credentials: true
-}));
-
-// Body parsing middleware
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
-
-// Routes
-app.use('/api/products', require('./routes/productRoutes'));
-app.use('/api/orders', require('./routes/orderRoutes'));
-
-// Health check endpoint
-app.get('/api/health', (req, res) => {
-  res.status(200).json({
-    success: true,
-    message: 'Server is running successfully',
-    timestamp: new Date().toISOString()
-  });
-});
-
-// 404 handler
-app.use('*', (req, res) => {
-  res.status(404).json({
-    success: false,
-    message: 'Route not found'
-  });
-});
-
-// Global error handler
-app.use((err, req, res, next) => {
-  console.error('Error:', err.stack);
-  
-  res.status(err.status || 500).json({
-    success: false,
-    message: err.message || 'Internal Server Error',
-    ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
-  });
-});
-
 const PORT = process.env.PORT || 5000;
 
+// Middlewares
+app.use(cors());
+app.use(express.json());
+
+// Test Route
+app.get('/', (req, res) => {
+  res.send('API is running!');
+});
+
+// Send Order Confirmation Email
+app.post('/api/send-order-email', async (req, res) => {
+  const { customerInfo, items, total, paymentMethod } = req.body;
+
+  if (!customerInfo || !items || !total || !paymentMethod) {
+    return res.status(400).json({ message: 'Missing order details' });
+  }
+
+  try {
+    // Create Nodemailer transporter
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+    });
+
+    // Build order summary
+    const orderDetails = items
+      .map(
+        (item) =>
+          `${item.name} (Qty: ${item.quantity}) - $${(item.price * item.quantity).toFixed(2)}`
+      )
+      .join('\n');
+
+    const mailOptions = {
+      from: process.env.EMAIL_USER,               // Your email
+      to: customerInfo.email,                    // Customer's email
+      subject: 'Order Confirmation - Thank you for your purchase!',
+      text: `
+Dear ${customerInfo.name},
+
+Thank you for your order!
+
+Order Summary:
+-----------------
+${orderDetails}
+
+Total Amount: $${total.toFixed(2)}
+Payment Method: ${paymentMethod}
+
+Shipping Address:
+${customerInfo.address}
+
+We appreciate your business!
+
+Best regards,
+Your Shop Team
+      `,
+    };
+
+    // Send email
+    await transporter.sendMail(mailOptions);
+
+    res.status(200).json({ message: 'Order confirmation email sent successfully' });
+  } catch (error) {
+    console.error('Email sending failed:', error);
+    res.status(500).json({ message: 'Failed to send email', error: error.message });
+  }
+});
+
+// Start server
 app.listen(PORT, () => {
-  console.log(`🚀 Server running in ${process.env.NODE_ENV} mode on port ${PORT}`);
+  console.log(`Server running on http://localhost:${PORT}`);
 });
