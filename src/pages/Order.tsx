@@ -18,6 +18,8 @@ const Order = () => {
   const { items, total, clearCart } = useCart();
   const { createOrder } = useOrder();
   const { toast } = useToast();
+  // Backend API base URL: configure via VITE_API_BASE_URL in .env
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
   const [paymentMethod, setPaymentMethod] = useState("card");
   const [isProcessing, setIsProcessing] = useState(false);
   const [customerInfo, setCustomerInfo] = useState({
@@ -80,15 +82,23 @@ const Order = () => {
       }
 
       // Get Razorpay Key
-      const keyResponse = await fetch('http://localhost:5000/api/razorpay-key');
+      const keyResponse = await fetch(`${API_BASE_URL}/api/razorpay-key`);
+      if (!keyResponse.ok) {
+        throw new Error(`Failed to fetch Razorpay key: ${keyResponse.status}`);
+      }
       const { key } = await keyResponse.json();
 
       // Create Razorpay Order
-      const orderResponse = await fetch('http://localhost:5000/api/create-razorpay-order', {
+      const orderResponse = await fetch(`${API_BASE_URL}/api/create-razorpay-order`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ amount: total }),
       });
+
+      if (!orderResponse.ok) {
+        const errText = await orderResponse.text().catch(() => '');
+        throw new Error(`Failed to create order: ${orderResponse.status} ${errText}`);
+      }
 
       const razorpayOrder = await orderResponse.json();
 
@@ -121,17 +131,21 @@ const Order = () => {
         handler: async function (response: any) {
           try {
             // Verify payment
-            const verifyResponse = await fetch('http://localhost:5000/api/verify-razorpay-payment', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                razorpay_order_id: response.razorpay_order_id,
-                razorpay_payment_id: response.razorpay_payment_id,
-                razorpay_signature: response.razorpay_signature,
-              }),
-            });
+             const verifyResponse = await fetch(`${API_BASE_URL}/api/verify-razorpay-payment`, {
+               method: 'POST',
+               headers: { 'Content-Type': 'application/json' },
+               body: JSON.stringify({
+                 razorpay_order_id: response.razorpay_order_id,
+                 razorpay_payment_id: response.razorpay_payment_id,
+                 razorpay_signature: response.razorpay_signature,
+               }),
+             });
 
-            const verifyData = await verifyResponse.json();
+             if (!verifyResponse.ok) {
+               throw new Error(`Payment verification failed: ${verifyResponse.status}`);
+             }
+
+             const verifyData = await verifyResponse.json();
 
             if (verifyData.success) {
               // Create order in context
@@ -144,7 +158,7 @@ const Order = () => {
               });
 
               // Send email
-              await fetch('http://localhost:5000/api/send-order-email', {
+              const emailResp = await fetch(`${API_BASE_URL}/api/send-order-email`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -154,6 +168,9 @@ const Order = () => {
                   paymentMethod: 'Razorpay',
                 }),
               });
+              if (!emailResp.ok) {
+                console.warn('Order email failed', await emailResp.text().catch(() => ''));
+              }
 
               clearCart();
               navigate(`/payment-success?orderId=${orderId}`);
@@ -198,9 +215,10 @@ const Order = () => {
 
     } catch (error) {
       console.error('Payment error:', error);
+      const message = error instanceof Error ? error.message : 'Unknown error';
       toast({
         title: "Connection Error",
-        description: "Cannot connect to payment server. Make sure backend is running on port 5000.",
+        description: `Cannot reach payment server. ${message}. Check backend URL and server status.`,
         variant: "destructive",
       });
       setIsProcessing(false);
