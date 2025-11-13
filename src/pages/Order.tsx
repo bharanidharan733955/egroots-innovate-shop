@@ -199,8 +199,8 @@ const Order = () => {
     } catch (error) {
       console.error('Payment error:', error);
       toast({
-        title: "Payment Failed",
-        description: "Something went wrong. Please try again.",
+        title: "Connection Error",
+        description: "Cannot connect to payment server. Make sure backend is running on port 5000.",
         variant: "destructive",
       });
       setIsProcessing(false);

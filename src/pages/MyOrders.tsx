@@ -3,7 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useOrder } from "@/contexts/OrderContext";
-import { Package, Calendar, CreditCard, ShoppingBag, Trash2, X } from "lucide-react";
+import { Package, Calendar, CreditCard, ShoppingBag, Trash2, X, Download } from "lucide-react";
+import { generateInvoice } from "@/lib/generateInvoice";
 import { Link } from "react-router-dom";
 import { useState } from "react";
 import {
@@ -242,6 +243,20 @@ const MyOrders = () => {
                         <p><strong>Address:</strong> {order.customerInfo.address}</p>
                       )}
                     </div>
+                  </div>
+                )}
+
+                {/* Download Invoice for completed orders */}
+                {order.paymentStatus === 'completed' && (
+                  <div className="mt-4">
+                    <Button
+                      onClick={() => generateInvoice(order)}
+                      variant="outline"
+                      className="w-full bg-primary/10 hover:bg-primary/20 text-primary border-primary/30"
+                    >
+                      <Download className="w-4 h-4 mr-2" />
+                      Download Invoice
+                    </Button>
                   </div>
                 )}
               </CardContent>
