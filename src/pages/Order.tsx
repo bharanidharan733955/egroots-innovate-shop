@@ -28,13 +28,21 @@ const Order = () => {
   });
 
   const paymentMethods = [
-    { id: "card", name: "Credit/Debit Card", icon: CreditCard, description: "Visa, Mastercard, RuPay" },
-    { id: "upi", name: "UPI", icon: Smartphone, description: "Google Pay, PhonePe, Paytm" },
-    { id: "razorpay", name: "Razorpay", icon: Building2, description: "Multiple payment options" },
+    { id: "razorpay", name: "Razorpay", icon: Building2, description: "Secure payment gateway" },
   ];
 
   const handleInputChange = (field, value) => {
     setCustomerInfo(prev => ({ ...prev, [field]: value }));
+  };
+
+  const loadRazorpayScript = () => {
+    return new Promise((resolve) => {
+      const script = document.createElement('script');
+      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+      script.onload = () => resolve(true);
+      script.onerror = () => resolve(false);
+      document.body.appendChild(script);
+    });
   };
 
   const handlePlaceOrder = async () => {
@@ -59,43 +67,142 @@ const Order = () => {
     setIsProcessing(true);
 
     try {
-      // Simulate payment processing
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Load Razorpay script
+      const scriptLoaded = await loadRazorpayScript();
+      if (!scriptLoaded) {
+        toast({
+          title: "Payment gateway error",
+          description: "Failed to load payment gateway. Please try again.",
+          variant: "destructive",
+        });
+        setIsProcessing(false);
+        return;
+      }
 
-      const orderId = createOrder({
-        items: [...items],
-        total,
-        paymentMethod: paymentMethods.find(method => method.id === paymentMethod)?.name || paymentMethod,
-        paymentStatus: 'completed',
-        customerInfo,
+      // Get Razorpay Key
+      const keyResponse = await fetch('http://localhost:5000/api/razorpay-key');
+      const { key } = await keyResponse.json();
+
+      // Create Razorpay Order
+      const orderResponse = await fetch('http://localhost:5000/api/create-razorpay-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ amount: total }),
       });
 
-      await fetch('http://localhost:5000/api/send-order-email', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({
-    customerInfo,
-    items,
-    total,
-    paymentMethod: paymentMethods.find(method => method.id === paymentMethod)?.name || paymentMethod,
-  }),
-});
+      const razorpayOrder = await orderResponse.json();
 
-toast({
-  title: "Order placed successfully!",
-  description: `Order #${orderId.split('-')[1]} has been confirmed and emailed.`,
-});
+      // Razorpay options
+      const options = {
+        key: key,
+        amount: razorpayOrder.amount,
+        currency: razorpayOrder.currency,
+        name: "Your Shop",
+        description: "Order Payment",
+        order_id: razorpayOrder.id,
+        config: {
+          display: {
+            blocks: {
+              banks: {
+                name: "Pay using Netbanking",
+                instruments: [
+                  {
+                    method: "netbanking",
+                  },
+                ],
+              },
+            },
+            sequence: ["block.banks"],
+            preferences: {
+              show_default_blocks: false,
+            },
+          },
+        },
+        handler: async function (response: any) {
+          try {
+            // Verify payment
+            const verifyResponse = await fetch('http://localhost:5000/api/verify-razorpay-payment', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+              }),
+            });
 
-      clearCart();
-      navigate('/my-orders');
+            const verifyData = await verifyResponse.json();
+
+            if (verifyData.success) {
+              // Create order in context
+              const orderId = createOrder({
+                items: [...items],
+                total,
+                paymentMethod: 'Razorpay',
+                paymentStatus: 'completed',
+                customerInfo,
+              });
+
+              // Send email
+              await fetch('http://localhost:5000/api/send-order-email', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  customerInfo,
+                  items,
+                  total,
+                  paymentMethod: 'Razorpay',
+                }),
+              });
+
+              clearCart();
+              navigate(`/payment-success?orderId=${orderId}`);
+            } else {
+              toast({
+                title: "Payment verification failed",
+                description: "Please contact support if amount was deducted.",
+                variant: "destructive",
+              });
+            }
+          } catch (error) {
+            toast({
+              title: "Payment verification failed",
+              description: "Please contact support if amount was deducted.",
+              variant: "destructive",
+            });
+          }
+        },
+        prefill: {
+          name: customerInfo.name,
+          email: customerInfo.email,
+          contact: customerInfo.phone,
+        },
+        theme: {
+          color: "#3b82f6",
+        },
+        modal: {
+          ondismiss: function() {
+            toast({
+              title: "Payment Failed",
+              description: "Payment was cancelled or failed. Please try again.",
+              variant: "destructive",
+            });
+            setIsProcessing(false);
+          }
+        }
+      };
+
+      const razorpay = new (window as any).Razorpay(options);
+      razorpay.open();
+      setIsProcessing(false);
 
     } catch (error) {
+      console.error('Payment error:', error);
       toast({
-        title: "Order failed",
+        title: "Payment Failed",
         description: "Something went wrong. Please try again.",
         variant: "destructive",
       });
-    } finally {
       setIsProcessing(false);
     }
   };

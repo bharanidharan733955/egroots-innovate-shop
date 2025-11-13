@@ -14,6 +14,7 @@ import Products from "./pages/Products";
 import Cart from "./pages/Cart";
 import Order from "./pages/Order";
 import MyOrders from "./pages/MyOrders";
+import PaymentSuccess from "./pages/PaymentSuccess";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
 import NotFound from "./pages/NotFound";
@@ -32,6 +33,7 @@ const AppRoutes = () => {
       <Route path="/cart" element={<ProtectedRoute><Cart /></ProtectedRoute>} />
       <Route path="/order" element={<ProtectedRoute><Order /></ProtectedRoute>} />
       <Route path="/my-orders" element={<ProtectedRoute><MyOrders /></ProtectedRoute>} />
+      <Route path="/payment-success" element={<ProtectedRoute><PaymentSuccess /></ProtectedRoute>} />
       <Route path="/about" element={<ProtectedRoute><About /></ProtectedRoute>} />
       <Route path="/contact" element={<ProtectedRoute><Contact /></ProtectedRoute>} />
       {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
