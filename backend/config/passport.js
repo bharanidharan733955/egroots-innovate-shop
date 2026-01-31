@@ -3,7 +3,7 @@ const GoogleStrategy = require("passport-google-oauth20").Strategy;
 const { handleGoogleAuthWithFormData } = require("../controllers/googleAuthController");
 
 const BACKEND_URL = process.env.BACKEND_URL || "";
-const CALLBACK_URL = BACKEND_URL ? `${BACKEND_URL.replace(/\/$/, "")}/api/auth/google/callback` : "";
+const CALLBACK_URL =  process.env.GOOGLE_REDIRECT_URL;
 const hasGoogleOAuthConfig =
   process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET && CALLBACK_URL;
 
