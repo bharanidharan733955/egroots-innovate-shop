@@ -4,6 +4,21 @@ const passport = require("../config/passport");
 
 const router = express.Router();
 
+const hasGoogleOAuthConfig =
+  process.env.GOOGLE_CLIENT_ID &&
+  process.env.GOOGLE_CLIENT_SECRET &&
+  process.env.BACKEND_URL;
+
+// Reject requests if Google OAuth is not configured
+const requireGoogleOAuth = (req, res, next) => {
+  if (!hasGoogleOAuthConfig) {
+    const frontendUrl = process.env.FRONTEND_URL || "";
+    const redirectUrl = frontendUrl ? `${frontendUrl}/signup?error=${encodeURIComponent("Google sign-in is not configured")}` : "/signup";
+    return res.redirect(redirectUrl);
+  }
+  next();
+};
+
 // Helper function to get frontend URL - uses env or referer origin
 const getFrontendURL = (req) => {
   if (process.env.FRONTEND_URL) {
@@ -26,7 +41,7 @@ const getFrontendURL = (req) => {
  * @desc    Initiate Google OAuth flow
  * @access  Public
  */
-router.get("/login", (req, res, next) => {
+router.get("/login", requireGoogleOAuth, (req, res, next) => {
   // Extract state parameter (contains form data from signup page)
   const state = req.query.state || null;
 
@@ -59,6 +74,7 @@ router.get("/login", (req, res, next) => {
  */
 router.get(
   "/callback",
+  requireGoogleOAuth,
   passport.authenticate("google", {
     failureRedirect: (req, res) => {
       const frontendUrl = req.session?.frontendUrl || getFrontendURL(req) || process.env.FRONTEND_URL || "";

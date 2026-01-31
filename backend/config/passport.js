@@ -4,23 +4,29 @@ const { handleGoogleAuthWithFormData } = require("../controllers/googleAuthContr
 
 const BACKEND_URL = process.env.BACKEND_URL || "";
 const CALLBACK_URL = BACKEND_URL ? `${BACKEND_URL.replace(/\/$/, "")}/api/auth/google/callback` : "";
+const hasGoogleOAuthConfig =
+  process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET && CALLBACK_URL;
 
-// Log the callback URL for debugging
-console.log("🔗 Google OAuth Callback URL:", CALLBACK_URL);
-console.log("⚠️  Make sure this URL is added to Google Cloud Console as an authorized redirect URI!");
+if (hasGoogleOAuthConfig) {
+  console.log("🔗 Google OAuth Callback URL:", CALLBACK_URL);
+  console.log("⚠️  Make sure this URL is added to Google Cloud Console as an authorized redirect URI!");
+} else {
+  console.warn("⚠️  Google OAuth disabled: Set GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, and BACKEND_URL in env");
+}
 
 /**
- * Google OAuth Strategy Configuration
+ * Google OAuth Strategy Configuration - only register when env vars are set
  */
-passport.use(
-  new GoogleStrategy(
-    {
-      clientID: process.env.GOOGLE_CLIENT_ID,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: CALLBACK_URL,
-      passReqToCallback: true, // Enable access to req object
-    },
-    async (req, accessToken, refreshToken, profile, done) => {
+if (hasGoogleOAuthConfig) {
+  passport.use(
+    new GoogleStrategy(
+      {
+        clientID: process.env.GOOGLE_CLIENT_ID,
+        clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+        callbackURL: CALLBACK_URL,
+        passReqToCallback: true,
+      },
+      async (req, accessToken, refreshToken, profile, done) => {
       try {
         // Extract form data from state parameter (passed from signup page)
         // State can come from req.query.state (Google returns it) or req.session.oauthState
@@ -49,7 +55,8 @@ passport.use(
       }
     }
   )
-);
+  );
+}
 
 // We are using JWTs, so serialize/deserialize are no-ops
 passport.serializeUser(() => {});
