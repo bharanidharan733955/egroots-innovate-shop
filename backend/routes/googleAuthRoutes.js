@@ -4,32 +4,21 @@ const passport = require("../config/passport");
 
 const router = express.Router();
 
-// Helper function to get frontend URL dynamically
+// Helper function to get frontend URL - uses env or referer origin
 const getFrontendURL = (req) => {
-  // Use env variable if set (for production)
   if (process.env.FRONTEND_URL) {
-    return process.env.FRONTEND_URL;
+    return process.env.FRONTEND_URL.replace(/\/$/, "");
   }
-  
-  // For localhost, try to detect from referer or use default
-  const referer = req.get('referer') || req.get('origin');
+  const referer = req.get("referer") || req.get("origin");
   if (referer) {
     try {
       const url = new URL(referer);
-      // If it's localhost, ALWAYS use HTTP (never HTTPS)
-      if (url.hostname === 'localhost' || url.hostname === '127.0.0.1') {
-        const port = url.port || '8080';
-        return `http://${url.hostname}:${port}`;
-      }
-      // For domain, use the origin as-is
-      return referer.replace(/\/$/, ''); // Remove trailing slash
+      return `${url.protocol}//${url.host}`;
     } catch (e) {
-      // Fallback if URL parsing fails
+      // Ignore parse errors
     }
   }
-  
-  // Default fallback for localhost - ALWAYS HTTP
-  return "http://localhost:8080";
+  return "";
 };
 
 /**
@@ -51,13 +40,9 @@ router.get("/login", (req, res, next) => {
   req.session.frontendUrl = frontendUrl;
   console.log("🔐 Storing frontend URL for redirect:", frontendUrl);
   
-  // Log the callback URL that will be used
-  // FORCE HTTP for localhost (never HTTPS)
-  let BACKEND_URL = process.env.BACKEND_URL || "http://localhost:5000";
-  if (BACKEND_URL.includes("localhost") || BACKEND_URL.includes("127.0.0.1")) {
-    BACKEND_URL = BACKEND_URL.replace(/^https:/, "http:");
-  }
-  const callbackURL = `${BACKEND_URL}/api/auth/google/callback`;
+  const callbackURL = process.env.BACKEND_URL
+    ? `${process.env.BACKEND_URL.replace(/\/$/, "")}/api/auth/google/callback`
+    : "";
   console.log("🔗 OAuth Callback URL being sent to Google:", callbackURL);
   console.log("⚠️  This URL MUST match exactly in Google Cloud Console!");
 
@@ -76,9 +61,8 @@ router.get(
   "/callback",
   passport.authenticate("google", {
     failureRedirect: (req, res) => {
-      // Get frontend URL from session or fallback
-      const frontendUrl = req.session?.frontendUrl || getFrontendURL(req) || process.env.FRONTEND_URL || "http://localhost:8080";
-      return `${frontendUrl}/signup`;
+      const frontendUrl = req.session?.frontendUrl || getFrontendURL(req) || process.env.FRONTEND_URL || "";
+      return frontendUrl ? `${frontendUrl}/signup` : "/signup";
     },
     session: false,
   }),
@@ -86,8 +70,7 @@ router.get(
     try {
       const { user, token, formData } = req.user; // formData contains name and password from signup form
 
-      // Get frontend URL from session (stored during login initiation) or fallback
-      const frontendUrl = req.session?.frontendUrl || getFrontendURL(req) || process.env.FRONTEND_URL || "http://localhost:8080";
+      const frontendUrl = req.session?.frontendUrl || getFrontendURL(req) || process.env.FRONTEND_URL || "";
 
       // Log for verification
       console.log("✅ Google OAuth callback successful:", {
@@ -117,9 +100,9 @@ router.get(
       return res.redirect(redirectURL);
     } catch (error) {
       console.error("❌ Error in Google OAuth callback:", error);
-      const frontendUrl = req.session?.frontendUrl || getFrontendURL(req) || process.env.FRONTEND_URL || "http://localhost:8080";
+      const frontendUrl = req.session?.frontendUrl || getFrontendURL(req) || process.env.FRONTEND_URL || "";
       const errorMessage = encodeURIComponent(error.message || "Authentication failed");
-      return res.redirect(`${frontendUrl}/signup?error=${errorMessage}`);
+      return res.redirect(frontendUrl ? `${frontendUrl}/signup?error=${errorMessage}` : `/signup?error=${errorMessage}`);
     }
   }
 );

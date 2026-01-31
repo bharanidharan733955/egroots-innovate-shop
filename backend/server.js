@@ -10,9 +10,9 @@ require("./db");
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Derived URLs
+// Derived URLs - set BACKEND_URL and FRONTEND_URL in production
 const FRONTEND_URL = process.env.FRONTEND_URL;
-const BACKEND_URL = process.env.BACKEND_URL || `http://localhost:${PORT}`;
+const BACKEND_URL = process.env.BACKEND_URL;
 const NODE_ENV = process.env.NODE_ENV || "development";
 
 // MIDDLEWARE
@@ -37,26 +37,12 @@ require("./config/passport");
 app.use(passport.initialize());
 app.use(passport.session());
 
-// CORS - Allow both localhost and domain
+// CORS - Use FRONTEND_URL from env
 const allowedOrigins = [];
-
-// Frontend URL from env (production / staging)
 if (FRONTEND_URL) {
   allowedOrigins.push(FRONTEND_URL);
 }
 console.log("✅ FRONTEND_URL:", FRONTEND_URL || "Not set");
-
-// Always allow localhost origins (for both development and production testing)
-allowedOrigins.push(
-  "http://localhost:5173", 
-  "http://localhost:8080",
-  "http://localhost:3000",
-  "http://localhost:5000", // ✅ Allow self-origin if needed
-  "http://127.0.0.1:5173",
-  "http://127.0.0.1:8080",
-  "http://127.0.0.1:3000",
-  "http://127.0.0.1:5000"
-);
 
 app.use(
   cors({
@@ -440,10 +426,10 @@ app.use((req, res) => {
 
 // START SERVER
 app.listen(PORT, () => {
-  const baseUrl = BACKEND_URL || `http://localhost:${PORT}`;
+  const baseUrl = BACKEND_URL || `Port ${PORT}`;
   console.log(`\n🚀 Server running on ${baseUrl}`);
-  console.log(`📡 API Base: ${baseUrl}/api`);
-  console.log(`💳 Payment Test: ${baseUrl}/api/payment/test`);
-  console.log(`🧪 Test Email: ${baseUrl}/api/test-shipment-email`);
-  console.log(`📧 Shipment Email: ${baseUrl}/api/send-shipment-email ✅`);
+  console.log(`📡 API Base: ${BACKEND_URL ? baseUrl + "/api" : "Set BACKEND_URL in env"}`);
+  console.log(`💳 Payment Test: ${BACKEND_URL ? baseUrl + "/api/payment/test" : "-"}`);
+  console.log(`🧪 Test Email: ${BACKEND_URL ? baseUrl + "/api/test-shipment-email" : "-"}`);
+  console.log(`📧 Shipment Email: ${BACKEND_URL ? baseUrl + "/api/send-shipment-email" : "-"} ✅`);
 });
