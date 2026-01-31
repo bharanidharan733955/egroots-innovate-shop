@@ -4,17 +4,26 @@ const crypto = require("crypto");
 
 const router = express.Router();
 
-// Initialize Razorpay
-const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID,
-  key_secret: process.env.RAZORPAY_KEY_SECRET,
-});
+const hasRazorpayConfig = process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET;
+
+// Lazy init - only create Razorpay instance when credentials are set
+let razorpay = null;
+const getRazorpay = () => {
+  if (!hasRazorpayConfig) return null;
+  if (!razorpay) {
+    razorpay = new Razorpay({
+      key_id: process.env.RAZORPAY_KEY_ID,
+      key_secret: process.env.RAZORPAY_KEY_SECRET,
+    });
+  }
+  return razorpay;
+};
 
 // ✅ GET RAZORPAY KEY
 router.get("/get-key", (req, res) => {
-  console.log("✅ GET /api/payment/get-key called");
-  console.log("🔑 Sending key:", process.env.RAZORPAY_KEY_ID);
-  
+  if (!hasRazorpayConfig) {
+    return res.status(503).json({ key: null, error: "Payment is not configured" });
+  }
   res.status(200).json({
     key: process.env.RAZORPAY_KEY_ID,
   });
@@ -22,8 +31,10 @@ router.get("/get-key", (req, res) => {
 
 // ✅ CREATE RAZORPAY ORDER
 router.post("/create-order", async (req, res) => {
-  console.log("✅ POST /api/payment/create-order called");
-  console.log("📦 Request body:", req.body);
+  const rp = getRazorpay();
+  if (!rp) {
+    return res.status(503).json({ success: false, message: "Payment is not configured" });
+  }
   
   try {
     const { amount } = req.body;
@@ -35,7 +46,7 @@ router.post("/create-order", async (req, res) => {
       payment_capture: 1,
     };
 
-    const order = await razorpay.orders.create(options);
+    const order = await rp.orders.create(options);
     console.log("✅ Order created:", order);
 
     res.status(200).json({
@@ -56,8 +67,9 @@ router.post("/create-order", async (req, res) => {
 
 // ✅ VERIFY RAZORPAY PAYMENT
 router.post("/verify", (req, res) => {
-  console.log("✅ POST /api/payment/verify called");
-  console.log("🔐 Verifying signature...");
+  if (!hasRazorpayConfig) {
+    return res.status(503).json({ success: false, message: "Payment is not configured" });
+  }
   
   try {
     const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
