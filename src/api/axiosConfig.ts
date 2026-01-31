@@ -1,31 +1,19 @@
 import axios from "axios";
 
-// Dynamically determine the backend URL based on current origin
+// Dynamically determine the backend URL based on env and current origin
 const getBackendURL = () => {
   // In development mode, use proxy (empty baseURL since paths already include /api)
   if (import.meta.env.MODE === "development") {
     return ""; // Empty because all API calls already include /api prefix
   }
 
-  // In production, check if we're on localhost or domain
-  const currentOrigin = window.location.origin;
-  const isLocalhost = currentOrigin.includes("localhost") || currentOrigin.includes("127.0.0.1");
-
-  // Always use HTTP for localhost (backend doesn't have SSL)
-  if (isLocalhost) {
-    const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:5000";
-    // Ensure HTTP for localhost
-    return backendUrl.includes("localhost") || backendUrl.includes("127.0.0.1")
-      ? backendUrl.replace(/^https:/, "http:")
-      : backendUrl;
-  } else {
-    // For domain, use env variable or construct from current origin
-    if (import.meta.env.VITE_BACKEND_URL) {
-      return import.meta.env.VITE_BACKEND_URL;
-    }
-    // Fallback: use same protocol as current origin for domain
-    return `${currentOrigin.replace(/:\d+$/, "")}:5000`;
+  // Use env variable if set
+  if (import.meta.env.VITE_BACKEND_URL) {
+    return import.meta.env.VITE_BACKEND_URL;
   }
+  // Fallback: use same protocol and host as current origin, port 5000
+  const currentOrigin = window.location.origin;
+  return `${currentOrigin.replace(/:\d+$/, "")}:5000`;
 };
 
 const baseURL = getBackendURL();

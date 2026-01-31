@@ -28,36 +28,14 @@ const Login: React.FC = () => {
 
   const [errors, setErrors] = useState<FormErrors>({});
 
-  // Dynamically get backend URL based on current origin
-  // Always use HTTP for localhost to avoid SSL errors
+  // Get backend URL from env or derive from current origin
   const backendUrl = (() => {
-    // Force HTTP protocol detection
-    const protocol = window.location.protocol;
-    const hostname = window.location.hostname;
-    const port = window.location.port;
-    const isLocalhost = hostname === "localhost" || hostname === "127.0.0.1";
-    
-    // ALWAYS use HTTP for localhost, regardless of current protocol
-    if (isLocalhost) {
-      const url = import.meta.env.VITE_BACKEND_URL;
-      // If env var is set but uses HTTPS, force HTTP for localhost
-      if (url && url.includes("localhost")) {
-        return url.replace(/^https:/, "http:");
-      }
-      return url || "http://localhost:5000";
-    }
-    
-    // For domain, use env variable or construct from current origin
     if (import.meta.env.VITE_BACKEND_URL) {
       return import.meta.env.VITE_BACKEND_URL;
     }
-    
-    // Fallback: use same protocol as current origin for domain
-    return `${protocol}//${hostname}${port ? `:${port}` : ""}`.replace(/:\d+$/, "") + ":5000";
+    const origin = window.location.origin;
+    return origin.replace(/:\d+$/, "") + ":5000";
   })();
-  
-  // Debug logging
-  console.log("🔗 Backend URL:", backendUrl);
 
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
@@ -91,16 +69,7 @@ const Login: React.FC = () => {
   };
 
   const handleGoogleLogin = () => {
-    const url = `${backendUrl}/api/auth/google/login`;
-    console.log("🔐 Redirecting to Google OAuth:", url);
-    // Ensure we're using HTTP for localhost
-    if (url.includes("localhost") && url.startsWith("https://")) {
-      const httpUrl = url.replace("https://", "http://");
-      console.log("⚠️ Converting HTTPS to HTTP:", httpUrl);
-      window.location.href = httpUrl;
-    } else {
-      window.location.href = url;
-    }
+    window.location.href = `${backendUrl}/api/auth/google/login`;
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
