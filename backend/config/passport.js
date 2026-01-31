@@ -3,7 +3,7 @@ const GoogleStrategy = require("passport-google-oauth20").Strategy;
 const { handleGoogleAuthWithFormData } = require("../controllers/googleAuthController");
 
 // Get backend URL and FORCE HTTP for localhost
-let BACKEND_URL = process.env.BACKEND_URL || "http://localhost:5000";
+let BACKEND_URL = process.env.BACKEND_URL ;
 
 // If BACKEND_URL contains localhost but uses HTTPS, force HTTP
 if (BACKEND_URL.includes("localhost") || BACKEND_URL.includes("127.0.0.1")) {
