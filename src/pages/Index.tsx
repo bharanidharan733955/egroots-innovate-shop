@@ -80,6 +80,23 @@ const Index = () => {
       <Navigation />
       <HeroSection />
 
+      {/* Trusted By Section */}
+      <section className="bg-white pb-10">
+        <div className="max-w-6xl mx-auto px-4">
+          <p className="text-center text-xs font-semibold tracking-[0.25em] text-slate-400 uppercase">
+            Trusted by leading institutions
+          </p>
+          <div className="mt-6 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-6 text-center text-sm font-semibold text-slate-500">
+            <span>TechCorp</span>
+            <span>EduSmart</span>
+            <span>RoboSystems</span>
+            <span>InnovateX</span>
+            <span>FutureLabs</span>
+            <span>StemWorld</span>
+          </div>
+        </div>
+      </section>
+
       {/* STREAM SECTION – dropdown + empty blue boxes */}
       <section className="bg-[#F1FFF7] pt-16 pb-20">
         <div className="max-w-6xl mx-auto px-4 grid grid-cols-1 lg:grid-cols-2 gap-10">
